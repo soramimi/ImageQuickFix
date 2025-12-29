@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1584</width>
+    <height>1066</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ImageQuickFix</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="frame_5">
+      <property name="frameShape">
+       <enum>QFrame::Shape::WinPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Sunken</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="ImageWidget" name="widget_image_viewer" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1584</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_new_from_clipboard"/>
+    <addaction name="action_file_open"/>
+    <addaction name="action_save_square_image"/>
+    <addaction name="action_save_as"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="action_fit_image_to_view"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="action_copy"/>
+    <addaction name="separator"/>
+    <addaction name="action_edit_squared"/>
+    <addaction name="separator"/>
+    <addaction name="action_edit_rotate_right"/>
+    <addaction name="action_edit_rotate_left"/>
+    <addaction name="action_edit_rotate_180deg"/>
+    <addaction name="action_edit_flip_horizontal"/>
+    <addaction name="action_edit_flip_vertical"/>
+    <addaction name="separator"/>
+    <addaction name="action_settings"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Edit"/>
+   <addaction name="menu_View"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_file_open">
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_fit_image_to_view">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fit image to view</string>
+   </property>
+  </action>
+  <action name="action_copy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="action_settings">
+   <property name="text">
+    <string>Settings...</string>
+   </property>
+  </action>
+  <action name="action_new_from_clipboard">
+   <property name="text">
+    <string>&amp;New from clipboard</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="action_edit_rotate_right">
+   <property name="text">
+    <string>Rotate right</string>
+   </property>
+  </action>
+  <action name="action_edit_rotate_left">
+   <property name="text">
+    <string>Rotate left</string>
+   </property>
+  </action>
+  <action name="action_edit_flip_vertical">
+   <property name="text">
+    <string>Flip vertical</string>
+   </property>
+  </action>
+  <action name="action_edit_flip_horizontal">
+   <property name="text">
+    <string>Flip horizontal</string>
+   </property>
+  </action>
+  <action name="action_edit_rotate_180deg">
+   <property name="text">
+    <string>Rotate 180 deg</string>
+   </property>
+  </action>
+  <action name="action_edit_squared">
+   <property name="text">
+    <string>Squared</string>
+   </property>
+  </action>
+  <action name="action_save_square_image">
+   <property name="text">
+    <string>Save square image...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_save_as">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ImageWidget</class>
+   <extends>QWidget</extends>
+   <header>ImageWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
