@@ -12,6 +12,7 @@ SOURCES += \
 	src/AbstractSettingForm.cpp \
 	src/ApplicationGlobal.cpp \
 	src/ApplicationSettings.cpp \
+	src/Coordinate.cpp \
 	src/ImageGenerator.cpp \
 	src/ImageWidget.cpp \
 	src/InternalImageView.cpp \
@@ -20,6 +21,7 @@ SOURCES += \
 	src/ReadOnlyLineEdit.cpp \
 	src/SettingGeneralForm.cpp \
 	src/SettingsDialog.cpp \
+	src/TrimDialog.cpp \
 	src/joinpath.cpp \
 	src/main.cpp \
 	src/misc.cpp
@@ -28,6 +30,7 @@ HEADERS += \
 	src/AbstractSettingForm.h \
 	src/ApplicationGlobal.h \
 	src/ApplicationSettings.h \
+	src/Coordinate.h \
 	src/ImageGenerator.h \
 	src/ImageWidget.h \
 	src/InternalImageView.h \
@@ -36,6 +39,7 @@ HEADERS += \
 	src/ReadOnlyLineEdit.h \
 	src/SettingGeneralForm.h \
 	src/SettingsDialog.h \
+	src/TrimDialog.h \
 	src/joinpath.h \
 	src/main.h \
 	src/misc.h
@@ -43,5 +47,6 @@ HEADERS += \
 FORMS += \
 	src/MainWindow.ui \
 	src/SettingGeneralForm.ui \
-	src/SettingsDialog.ui
+	src/SettingsDialog.ui \
+	src/TrimDialog.ui
 

@@ -2,6 +2,7 @@
 #define MAIN_H
 
 #include "ApplicationSettings.h"
+#include <QBrush>
 #include <QColor>
 #include <QString>
 

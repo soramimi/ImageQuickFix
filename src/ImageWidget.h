@@ -14,7 +14,7 @@ class MainWindow;
  * ズーム・パンの制御を仲介します。
  */
 class ImageWidget : public QWidget {
-    Q_OBJECT
+	Q_OBJECT
 	friend class MainWindow;
 	friend class InternalImageView;
 private:
@@ -28,9 +28,15 @@ public:
 	explicit ImageWidget(QWidget *parent = nullptr);
 	/** @brief デストラクタ。 */
 	~ImageWidget();
+
+	void setOverlayPainter(std::function<void (QPainter *painter, Coordinate const &coord, void *cookie)> fn, void *cookie)
+	{
+		view_->setOverlayPainter(fn, cookie);
+	}
+
 	/** @brief フィット表示ON/OFF。 */
 	void fitImageToView(bool fit);
-    /** @brief 表示画像を設定し、必要なら内部サイズ更新。 */
+	/** @brief 表示画像を設定し、必要なら内部サイズ更新。 */
 	void setImage(QImage const &image);
 	/** @brief スケール値を直接設定。 */
 	void setScale(double scale);

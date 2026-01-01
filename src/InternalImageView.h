@@ -2,9 +2,12 @@
 #define INTERNALIMAGEVIEW_H
 
 #include <QWidget>
+#include <functional>
 
 class ImageWidget;
 class QScrollBar;
+class QPainter;
+class Coordinate;
 
 /**
  * @brief 実際の画像描画とズーム・パン処理を担当する内部ビュー。
@@ -24,6 +27,7 @@ private:
 	void fitImageToView(bool fit);
 	/** @brief スクロール可能か判定。 */
 	bool isScrollable() const;
+	void drawFrame(QPainter *pr, const QRect &rect);
 protected:
 	void paintEvent(QPaintEvent *event) override;
 public:
@@ -31,6 +35,15 @@ public:
 	explicit InternalImageView(ImageWidget *parent, QScrollBar *hsb, QScrollBar *vsb);
 	/** @brief デストラクタ。 */
 	~InternalImageView();
+
+	std::function<void (QPainter *painter, Coordinate const &coord, void *cookie)> overlay_painter_fn_;
+	void *overlay_painter_cookie_ = nullptr;
+	void setOverlayPainter(std::function<void (QPainter *painter, Coordinate const &coord, void *cookie)> fn, void *cookie)
+	{
+		overlay_painter_fn_ = fn;
+		overlay_painter_cookie_ = cookie;
+	}
+
 	/** @brief 現在の拡大率取得。 */
 	double scale() const;
 	/** @brief 実画像の幅取得。 */

@@ -1,3 +1,4 @@
+#include "Coordinate.h"
 #include "ImageWidget.h"
 #include "InternalImageView.h"
 #include "MainWindow.h"
@@ -16,11 +17,7 @@ struct InternalImageView::Private {
 	QScrollBar *hsb;
 	QScrollBar *vsb;
 	QImage image;
-	double scale = 1;              //!< 拡大率
-	double real_x = 0;             //!< 表示中心の実座標X
-	double real_y = 0;             //!< 表示中心の実座標Y
-	double real_w = 0;             //!< 画像実幅
-	double real_h = 0;             //!< 画像実高
+	Coordinate coord;
 	QPoint last_mouse_pt = {-1, -1};
 	QPoint zoom_view_pt;           //!< ズーム基準ビュー座標
 	QPointF zoom_real_pt;          //!< ズーム基準実座標
@@ -78,49 +75,49 @@ bool InternalImageView::isScrollable() const
 /** @brief 現在の拡大率取得。 */
 double InternalImageView::scale() const
 {
-	return m->scale;
+	return m->coord.scale;
 }
 
 /** @brief 実画像幅取得。 */
 double InternalImageView::realWidth() const
 {
-	return m->real_w;
+	return m->coord.real_w;
 }
 
 /** @brief 実画像高取得。 */
 double InternalImageView::realHeight() const
 {
-	return m->real_h;
+	return m->coord.real_h;
 }
 
 /**
  * @brief 指定位置を基準にズーム/スクロール位置を更新。
  * @param view_pt ビュー座標
  * @param real_pt 対応する実座標
- * @param scale 新しい拡大率 (クランプ 1/16～16)
+ * @param coord.scale 新しい拡大率 (クランプ 1/16～16)
  */
 void InternalImageView::zoomTo(QPoint view_pt, QPointF real_pt, double scale)
 {
 	const int w = width();
 	const int h = height();
 	scale = std::max(1 / 16.0, std::min(scale, 16.0));
-	m->real_x = real_pt.x() - (view_pt.x() - w / 2) / scale;
-	m->real_y = real_pt.y() - (view_pt.y() - h / 2) / scale;
-	m->real_x = std::max(0.0, std::min(m->real_x, m->real_w));
-	m->real_y = std::max(0.0, std::min(m->real_y, m->real_h));
-	m->scroll_org_pt = {m->real_x, m->real_y};
-	m->scale = scale;
+	m->coord.real_x = real_pt.x() - (view_pt.x() - w / 2) / scale;
+	m->coord.real_y = real_pt.y() - (view_pt.y() - h / 2) / scale;
+	m->coord.real_x = std::max(0.0, std::min(m->coord.real_x, m->coord.real_w));
+	m->coord.real_y = std::max(0.0, std::min(m->coord.real_y, m->coord.real_h));
+	m->scroll_org_pt = {m->coord.real_x, m->coord.real_y};
+	m->coord.scale = scale;
 	{
 		bool b = m->hsb->blockSignals(true);
-		m->hsb->setRange(0, m->real_w * m->scale);
-		m->hsb->setValue(m->real_x * m->scale);
+		m->hsb->setRange(0, m->coord.real_w * m->coord.scale);
+		m->hsb->setValue(m->coord.real_x * m->coord.scale);
 		m->hsb->setPageStep(width());
 		m->hsb->blockSignals(b);
 	}
 	{
 		bool b = m->vsb->blockSignals(true);
-		m->vsb->setRange(0, m->real_h * m->scale);
-		m->vsb->setValue(m->real_y * m->scale);
+		m->vsb->setRange(0, m->coord.real_h * m->coord.scale);
+		m->vsb->setValue(m->coord.real_y * m->coord.scale);
 		m->vsb->setPageStep(height());
 		m->vsb->blockSignals(b);
 	}
@@ -134,10 +131,10 @@ void InternalImageView::fitImageToView(bool fit)
 {
 	m->fit_image_to_view = fit;
 	if (m->fit_image_to_view) {
-		double scale0 = width() / m->real_w;
-		double scale1 = height() / m->real_h;
+		double scale0 = width() / m->coord.real_w;
+		double scale1 = height() / m->coord.real_h;
 		double scale = std::min(scale0, scale1) * 0.95;
-		zoomTo({width() / 2, height() / 2}, {m->real_w / 2, m->real_h / 2}, scale);
+		zoomTo({width() / 2, height() / 2}, {m->coord.real_w / 2, m->coord.real_h / 2}, scale);
 	}
 }
 
@@ -146,12 +143,12 @@ void InternalImageView::fitImageToView(bool fit)
  */
 void InternalImageView::setSize(double w, double h)
 {
-	m->real_w = w;
-	m->real_h = h;
+	m->coord.real_w = w;
+	m->coord.real_h = h;
 	if (m->fit_image_to_view) {
 		fitImageToView(m->fit_image_to_view);
 	} else {
-		zoomTo({width() / 2, height() / 2}, {w / 2, h / 2}, m->scale);
+		zoomTo({width() / 2, height() / 2}, {w / 2, h / 2}, m->coord.scale);
 	}
 }
 
@@ -160,8 +157,8 @@ void InternalImageView::setSize(double w, double h)
  */
 void InternalImageView::setPosition(double x, double y)
 {
-	m->real_x = x / m->scale;
-	m->real_y = y / m->scale;
+	m->coord.real_x = x / m->coord.scale;
+	m->coord.real_y = y / m->coord.scale;
 	update();
 }
 
@@ -170,7 +167,7 @@ void InternalImageView::setPosition(double x, double y)
  */
 void InternalImageView::setScale(double s)
 {
-	m->scale = s;
+	m->coord.scale = s;
 	update();
 }
 
@@ -179,8 +176,8 @@ QPointF InternalImageView::posRealFromView(QPointF const &view_pt)
 {
 	const int w = width();
 	const int h = height();
-	double x = (view_pt.x() - w / 2) / m->scale + m->real_x;
-	double y = (view_pt.y() - h / 2) / m->scale + m->real_y;
+	double x = (view_pt.x() - w / 2) / m->coord.scale + m->coord.real_x;
+	double y = (view_pt.y() - h / 2) / m->coord.scale + m->coord.real_y;
 	return {x, y};
 }
 
@@ -189,8 +186,8 @@ QPointF InternalImageView::posViewFromReal(QPointF const &real_pt)
 {
 	const int w = width();
 	const int h = height();
-	double x = (real_pt.x() - m->real_x) * m->scale + w / 2;
-	double y = (real_pt.y() - m->real_y) * m->scale + h / 2;
+	double x = (real_pt.x() - m->coord.real_x) * m->coord.scale + w / 2;
+	double y = (real_pt.y() - m->coord.real_y) * m->coord.scale + h / 2;
 	return {x, y};
 }
 
@@ -198,6 +195,8 @@ QPointF InternalImageView::posViewFromReal(QPointF const &real_pt)
 void InternalImageView::resizeEvent(QResizeEvent *event)
 {
 	QWidget::resizeEvent(event);
+
+	m->coord.view_size = event->size();
 
 	if (m->fit_image_to_view) {
 		fitImageToView(true);
@@ -251,19 +250,19 @@ void InternalImageView::mouseMoveEvent(QMouseEvent *event)
 
 		if (!done && m->dragging && isScrollable()) {
 			if (event->buttons() & Qt::LeftButton) {
-				QPointF delta = QPointF(pt - m->zoom_view_pt) / m->scale;
-				m->real_x = m->scroll_org_pt.x() - delta.x();
-				m->real_y = m->scroll_org_pt.y() - delta.y();
-				m->real_x = std::max(0.0, std::min(m->real_x, m->real_w));
-				m->real_y = std::max(0.0, std::min(m->real_y, m->real_h));
+				QPointF delta = QPointF(pt - m->zoom_view_pt) / m->coord.scale;
+				m->coord.real_x = m->scroll_org_pt.x() - delta.x();
+				m->coord.real_y = m->scroll_org_pt.y() - delta.y();
+				m->coord.real_x = std::max(0.0, std::min(m->coord.real_x, m->coord.real_w));
+				m->coord.real_y = std::max(0.0, std::min(m->coord.real_y, m->coord.real_h));
 				{
 					bool b = m->hsb->blockSignals(true);
-					m->hsb->setValue(m->real_x * m->scale);
+					m->hsb->setValue(m->coord.real_x * m->coord.scale);
 					m->hsb->blockSignals(b);
 				}
 				{
 					bool b = m->vsb->blockSignals(true);
-					m->vsb->setValue(m->real_y * m->scale);
+					m->vsb->setValue(m->coord.real_y * m->coord.scale);
 					m->vsb->blockSignals(b);
 				}
 				update();
@@ -271,7 +270,7 @@ void InternalImageView::mouseMoveEvent(QMouseEvent *event)
 		} else {
 			m->zoom_view_pt = pt;
 			m->zoom_real_pt = posRealFromView(m->zoom_view_pt);
-			m->scroll_org_pt = {m->real_x, m->real_y};
+			m->scroll_org_pt = {m->coord.real_x, m->coord.real_y};
 		}
 	}
 }
@@ -283,7 +282,7 @@ void InternalImageView::wheelEvent(QWheelEvent *event)
 	if (m->fit_image_to_view) return;
 
 	double delta = event->angleDelta().y();
-	double scale = m->scale * pow(1.002, delta);
+	double scale = m->coord.scale * pow(1.002, delta);
 
 	zoomTo(m->zoom_view_pt, m->zoom_real_pt, scale);
 }
@@ -307,30 +306,51 @@ void InternalImageView::setImage(const QImage &image)
 	update();
 }
 
+//
+void InternalImageView::drawFrame(QPainter *pr, QRect const &rect)
+{
+	int x = rect.x();
+	int y = rect.y();
+	int w = rect.width();
+	int h = rect.height();
+	QColor black(0, 0, 0);
+	QColor gray(128, 128, 128);
+	QColor white(255, 255, 255);
+	pr->fillRect(x - 1, y - 1, w + 2, 1, black);
+	pr->fillRect(x - 1, y - 1, 1, h + 2, black);
+	pr->fillRect(x - 1, y + h, w + 2, 1, black);
+	pr->fillRect(x + w, y - 1, 1, h + 2, black);
+	pr->fillRect(x - 1, y - 2, w + 2, 1, gray);
+	pr->fillRect(x - 2, y - 1, 1, h + 2, gray);
+	pr->fillRect(x - 1, y + h + 1, w + 2, 1, white);
+	pr->fillRect(x + w + 1, y - 1, 1, h + 2, white);
+}
+
 /** @brief 描画イベント: 画像を中心基準で描画し簡易枠線を付与。 */
 void InternalImageView::paintEvent(QPaintEvent *event)
 {
 	QPainter pr(this);
 	{
-		int x = width() / 2 - m->real_x * m->scale;
-		int y = height() / 2 - m->real_y * m->scale;
-		int w = m->image.width() * m->scale;
-		int h = m->image.height() * m->scale;
+		QPointF topleft = posViewFromReal(QPointF(0, 0));
+		QPointF bottomright = posViewFromReal(QPointF(m->image.width(), m->image.height()));
+		int x = int(topleft.x());
+		int y = int(topleft.y());
+		int w = int(bottomright.x()) - x;
+		int h = int(bottomright.y()) - y;
 		if (w > 0 && h > 0) {
-			pr.setBrushOrigin(x, y);
-			pr.fillRect(QRect(x, y, w, h), m->checkerboard_brush);
-			pr.drawImage(QRect(x, y, w, h), m->image);
-			QColor black(0, 0, 0);
-			QColor gray(128, 128, 128);
-			QColor white(255, 255, 255);
-			pr.fillRect(x - 1, y - 1, w + 2, 1, black);
-			pr.fillRect(x - 1, y - 1, 1, h + 2, black);
-			pr.fillRect(x - 1, y + h, w + 2, 1, black);
-			pr.fillRect(x + w, y - 1, 1, h + 2, black);
-			pr.fillRect(x - 1, y - 2, w + 2, 1, gray);
-			pr.fillRect(x - 2, y - 1, 1, h + 2, gray);
-			pr.fillRect(x - 1, y + h + 1, w + 2, 1, white);
-			pr.fillRect(x + w + 1, y - 1, 1, h + 2, white);
+			QRect rect(x, y, w, h);
+			pr.save();
+			{
+				pr.setClipRect(rect);
+				pr.setBrushOrigin(x, y);
+				pr.fillRect(rect, m->checkerboard_brush);
+				pr.drawImage(rect, m->image);
+				if (overlay_painter_fn_) {
+					overlay_painter_fn_(&pr, m->coord, overlay_painter_cookie_);
+				}
+			}
+			pr.restore();
+			drawFrame(&pr, rect);
 		}
 	}
 }

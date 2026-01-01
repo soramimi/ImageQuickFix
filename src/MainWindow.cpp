@@ -4,15 +4,22 @@
 #include "SettingsDialog.h"
 #include "main.h"
 #include "ImageGenerator.h"
+#include "TrimDialog.h"
+#include "Coordinate.h"
 #include <QClipboard>
+#include <QDragEnterEvent>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QMimeData>
+#include <QPainter>
+#include <QPainterPath>
 #include <QScreen>
 
 /**
  * @brief MainWindow のプライベート実装構造体。
  */
 struct MainWindow::Private {
+	QBrush checkerboard_brush;
 	QImage current_image;
 };
 
@@ -57,6 +64,20 @@ MainWindow::MainWindow(QWidget *parent)
 			}
 		}
 	}
+
+	{
+		QImage image(16, 16, QImage::Format_RGB888);
+		for (int y = 0; y < 16; y++) {
+			uint8_t *p = (uint8_t *)image.scanLine(y);
+			for (int x = 0; x < 16; x++) {
+				uint8_t v = ((x ^ y) & 8) ? 192 : 255;
+				p[3 * x + 0] = v;
+				p[3 * x + 1] = v;
+				p[3 * x + 2] = v;
+			}
+		}
+		m->checkerboard_brush = QBrush(image);
+	}
 }
 
 /**
@@ -75,6 +96,10 @@ void MainWindow::setImage(QImage const &image)
 {
 	m->current_image = image;
 	ui->widget_image_viewer->setImage(m->current_image);
+
+	int w = m->current_image.width();
+	int h = m->current_image.height();
+	ui->action_remove_frame->setEnabled(w == 2048 && h == 1440);
 }
 
 /**
@@ -141,6 +166,67 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 
 	QMainWindow::closeEvent(event);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+	if (QApplication::modalWindow()) return;
+
+	if (event->mimeData()->hasUrls()) {
+		event->setDropAction(Qt::CopyAction);
+		event->accept();
+		return;
+	}
+	QMainWindow::dragEnterEvent(event);
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+	if (QApplication::modalWindow()) return;
+
+	if (0) {
+		QMimeData const *mimedata = event->mimeData();
+		QByteArray encoded = mimedata->data("application/x-qabstractitemmodeldatalist");
+		QDataStream stream(&encoded, QIODevice::ReadOnly);
+		while (!stream.atEnd()) {
+			int row, col;
+			QMap<int,  QVariant> roledatamap;
+			stream >> row >> col >> roledatamap;
+		}
+	}
+
+	if (event->mimeData()->hasUrls()) {
+		QStringList paths;
+		QByteArray ba = event->mimeData()->data("text/uri-list");
+		if (ba.size() > 4 && memcmp(ba.data(), "h\0t\0t\0p\0", 8) == 0) {
+			QString path = QString::fromUtf16((ushort const *)ba.data(), ba.size() / 2);
+			int i = path.indexOf('\n');
+			if (i >= 0) {
+				path = path.mid(0, i);
+			}
+			if (!path.isEmpty()) {
+				paths.push_back(path);
+			}
+		} else {
+			QList<QUrl> urls = event->mimeData()->urls();
+			for (QUrl const &url : urls) {
+				QString path = url.url();
+				paths.push_back(path);
+			}
+		}
+		for (QString const &path : paths) {
+			if (path.startsWith("file://")) {
+				int i = 7;
+#ifdef Q_OS_WIN
+				if (path.utf16()[i] == '/') {
+					i++;
+				}
+#endif
+				openFile(path.mid(i));
+			} else if (path.startsWith("http://") || path.startsWith("https://")) {
+			}
+		}
+	}
 }
 
 /**
@@ -252,6 +338,20 @@ void MainWindow::on_action_save_as_triggered()
 			QString dir = QFileInfo(path).absolutePath();
 			s.setValue("SaveDir", dir);
 			m->current_image.save(path);
+		}
+	}
+}
+
+void MainWindow::on_action_remove_frame_triggered()
+{
+	int w = m->current_image.width();
+	int h = m->current_image.height();
+	if (w == 2048 && h == 1440) {
+		TrimDialog dlg(this);
+		dlg.setImage(m->current_image);
+		if (dlg.exec() == QDialog::Accepted) {
+			QImage image = dlg.trimmedImage();
+			setImage(image);
 		}
 	}
 }

@@ -69,7 +69,7 @@
      <x>0</x>
      <y>0</y>
      <width>1584</width>
-     <height>30</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -102,6 +102,8 @@
     <addaction name="action_edit_flip_vertical"/>
     <addaction name="separator"/>
     <addaction name="action_settings"/>
+    <addaction name="separator"/>
+    <addaction name="action_remove_frame"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -186,6 +188,14 @@
   <action name="action_save_as">
    <property name="text">
     <string>Save as...</string>
+   </property>
+  </action>
+  <action name="action_remove_frame">
+   <property name="text">
+    <string>Remove frame</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove frame</string>
    </property>
   </action>
  </widget>

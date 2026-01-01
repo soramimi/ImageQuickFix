@@ -73,5 +73,10 @@ private slots:
 	void on_action_edit_squared_triggered();
 	void on_action_save_square_image_triggered();
 	void on_action_save_as_triggered();
+	void on_action_remove_frame_triggered();
+
+protected:
+	void dragEnterEvent(QDragEnterEvent *event);
+	void dropEvent(QDropEvent *event);
 };
 #endif // MAINWINDOW_H
